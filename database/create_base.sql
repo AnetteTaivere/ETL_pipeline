@@ -1,3 +1,4 @@
+-- Create a table to store keywords
 CREATE TABLE IF NOT EXISTS search_data (
         id SERIAL PRIMARY KEY,
         term VARCHAR(255) NOT NULL,

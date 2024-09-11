@@ -1,22 +1,76 @@
 services:
-  db:
-    build: ./database/
+
+  postgres:
     image: postgres:13
+    container_name: etl_pipeline-postgres-1
     environment:
+      POSTGRES_DB: keywords
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: keywords
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/create_base.sql:/docker-entrypoint-initdb.d/create_base.sql
 
-  app:
-    build: .
+  airflow-webserver:
+    image: apache/airflow:2.7.2
+    container_name: etl_pipeline-airflow-webserver-1
     depends_on:
-      - db
-    ports:
-      - "8000:8000"
+      - airflow-scheduler
+      - postgres
     environment:
-      DB_HOST: db
-      DB_NAME: keywords
-      DB_USER: admin
-      DB_PASS: admin
+      AIRFLOW__CORE__EXECUTOR: "LocalExecutor"
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://admin:admin@postgres:5432/keywords"
+      AIRFLOW__CORE__FERNET_KEY: "HWdP9bGw2Lc5Is4-bNWUEWwej0IF6_prXdVy55AjA3Y="    
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./app:/opt/airflow/app
+      - /home/anette/Downloads/etl_pipeline/dags:/opt/airflow/dags      
+    ports:
+      - "8080:8080"
+    command: webserver
+
+  airflow-scheduler:
+    image: apache/airflow:2.7.2-python3.10
+    container_name: etl_pipeline-airflow-scheduler-1
+    environment:
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://admin:admin@postgres:5432/keywords
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "False"
+    depends_on:
+      - postgres
+    volumes:
+      - /home/anette/Downloads/etl_pipeline/dags:/opt/airflow/dags      
+      - ./dags:/opt/airflow/dags
+      - ./app:/opt/airflow/app
+    command: scheduler
+
+  airflow-init:
+    image: apache/airflow:2.7.2-python3.10
+    container_name: etl_pipeline-airflow-init-1
+    depends_on:
+      - postgres
+    entrypoint: ["airflow", "db", "migrate"]
+    environment:
+      AIRFLOW__CORE__SQL_ALCHEMY_DATABASE_URI: postgresql+psycopg2://admin:admin@postgres:5432/keywords
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: etl_pipeline-grafana-1
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+
+volumes:
+  postgres_data:
+  grafana_data:

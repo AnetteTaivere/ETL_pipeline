@@ -2,4 +2,4 @@ requests
 beautifulsoup4
 lxml
 psycopg2-binary
-sqlalchemy
+sqlalchemy==1.4

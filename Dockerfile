@@ -1,16 +1,26 @@
-FROM python:3.10
+FROM apache/airflow:2.7.2-python3.10
 
-WORKDIR app
+ENV PYTHONPATH=/opt/airflow
+
+WORKDIR /app
+
+COPY requirements.txt .
 COPY app/* /app
+COPY dags/ /opt/airflow/dags/
 
 # Install any needed packages specified in requirements.txt
 RUN pip install -r requirements.txt
-
-# For Postgresql 
-EXPOSE 5432
 
 # Env vars
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "crawler.py"]
+# For Postgresql 
+EXPOSE 5432
+
+# For Airflow
+EXPOSE 8080
+
+
+# Command to run
+CMD ["airflow", "webserver"]
