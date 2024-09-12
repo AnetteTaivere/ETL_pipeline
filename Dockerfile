@@ -5,11 +5,13 @@ ENV PYTHONPATH=/opt/airflow
 WORKDIR /app
 
 COPY requirements.txt .
+# Install any needed packages specified in requirements.txt
+RUN pip install -r requirements.txt
+
 COPY app/* /app
 COPY dags/ /opt/airflow/dags/
 
-# Install any needed packages specified in requirements.txt
-RUN pip install -r requirements.txt
+
 
 # Env vars
 ENV PYTHONDONTWRITEBYTECODE=1

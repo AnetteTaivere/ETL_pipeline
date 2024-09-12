@@ -2,7 +2,6 @@ services:
 
   postgres:
     image: postgres:13
-    container_name: etl_pipeline-postgres-1
     environment:
       POSTGRES_DB: keywords
       POSTGRES_USER: admin
@@ -13,27 +12,26 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./database/create_base.sql:/docker-entrypoint-initdb.d/create_base.sql
 
+
   airflow-webserver:
-    image: apache/airflow:2.7.2
-    container_name: etl_pipeline-airflow-webserver-1
+    image: apache/airflow:2.7.2-python3.10
     depends_on:
       - airflow-scheduler
       - postgres
     environment:
       AIRFLOW__CORE__EXECUTOR: "LocalExecutor"
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://admin:admin@postgres:5432/keywords"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://admin:admin@postgres:5432/keywords"
       AIRFLOW__CORE__FERNET_KEY: "HWdP9bGw2Lc5Is4-bNWUEWwej0IF6_prXdVy55AjA3Y="    
     volumes:
       - ./dags:/opt/airflow/dags
       - ./app:/opt/airflow/app
-      - /home/anette/Downloads/etl_pipeline/dags:/opt/airflow/dags      
     ports:
       - "8080:8080"
     command: webserver
 
+
   airflow-scheduler:
     image: apache/airflow:2.7.2-python3.10
-    container_name: etl_pipeline-airflow-scheduler-1
     environment:
       AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://admin:admin@postgres:5432/keywords
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -49,16 +47,16 @@ services:
 
   airflow-init:
     image: apache/airflow:2.7.2-python3.10
-    container_name: etl_pipeline-airflow-init-1
     depends_on:
       - postgres
     entrypoint: ["airflow", "db", "migrate"]
     environment:
       AIRFLOW__CORE__SQL_ALCHEMY_DATABASE_URI: postgresql+psycopg2://admin:admin@postgres:5432/keywords
+      
 
   grafana:
     image: grafana/grafana:latest
-    container_name: etl_pipeline-grafana-1
+    container_name: grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     ports:

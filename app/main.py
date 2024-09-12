@@ -15,13 +15,16 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # Define time zone
 tz = pytz.timezone('Europe/Tallinn') 
 
-load_dotenv()
+
 # Environment variables
-dbname = os.getenv('DB_NAME')
-user = os.getenv('DB_USER')
-password = os.getenv('DB_PASS')
-host = os.getenv('DB_HOST')
-port = os.getenv('DB_PORT')
+load_dotenv()
+dbname = os.getenv('DB_NAME', 'keywords')
+user = os.getenv('DB_USER', 'admin')
+password = os.getenv('DB_PASSWORD', 'admin')
+host = os.getenv('DB_HOST', 'postgres')
+port = os.getenv('DB_PORT', '5432')
+
+print(dbname, user, password, host, port)
 
 # URLs and keywords
 keywords = ['election', 'war', 'economy']
@@ -31,8 +34,11 @@ urls = {
 }
 
 # Database connection
-db_string = 'postgresql://{}:{}@{}:{}/{}'.format(user, password, host, port, dbname)
+db_string = 'postgresql+psycopg2://admin:admin@postgres:5432/keywords'
 db_engine = create_engine(db_string)
+
+with db_engine.connect() as connection:
+    print("Connection successful")
 
 def count_keywords_in_headings(url, keywords, site_name):
     try:
@@ -63,6 +69,7 @@ def count_keywords_in_headings(url, keywords, site_name):
         logging.info(f"Results for site: {site_name}")
         for result in results:
             logging.info(f"Keyword: {result['term']}, Count: {result['incidence']}, Timestamp: {result['timestamp']}")
+            print(f"Keyword: {result['term']}, Count: {result['incidence']}, Timestamp: {result['timestamp']}")
         
         return results
 
