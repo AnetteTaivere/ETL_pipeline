@@ -18,7 +18,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 4,
   "links": [],
   "liveNow": true,
   "panels": [
@@ -26,7 +25,7 @@
       "datasource": {
         "default": true,
         "type": "grafana-postgresql-datasource",
-        "uid": "e0b21ec6-84ee-4c13-bc4f-fa1199379510"
+        "uid": "PCC52D03280B7034C"
       },
       "fieldConfig": {
         "defaults": {
@@ -37,7 +36,7 @@
             "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
-            "axisLabel": "",
+            "axisLabel": "Average incidents",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "barWidthFactor": 0.6,
@@ -51,6 +50,9 @@
             },
             "insertNulls": false,
             "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
@@ -111,8 +113,66 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT \n    date_trunc('day', timestamp) AS day,\n    term,\n    AVG(incidence) AS avg_incidence\nFROM \n    search_data \nGROUP BY \n    day, term\nORDER BY \n    day ASC;\n",
+          "rawSql": "SELECT\n  DATE_TRUNC('day', timestamp) AS day,\n  AVG(incidence) AS election_avg\nFROM\n  search_data\nWHERE\n  term = 'election'\nGROUP BY\n  day\nORDER BY\n  day ASC;",
           "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "PCC52D03280B7034C"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT\n  DATE_TRUNC('day', timestamp) AS day,\n  AVG(incidence) AS war_avg\nFROM\n  search_data\nWHERE\n  term = 'war'\nGROUP BY\n  day\nORDER BY\n  day ASC;",
+          "refId": "B",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        },
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "PCC52D03280B7034C"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "hide": false,
+          "rawQuery": true,
+          "rawSql": "SELECT\n  DATE_TRUNC('day', timestamp) AS day,\n  AVG(incidence) AS economy_avg\nFROM\n  search_data\nWHERE\n  term = 'economy'\nGROUP BY\n  day\nORDER BY\n  day ASC;",
+          "refId": "C",
           "sql": {
             "columns": [
               {
@@ -136,24 +196,23 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "",
   "schemaVersion": 39,
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "2024-09-11T00:00:00.000Z",
-    "to": "2024-09-11T00:00:00.000Z"
+    "from": "now-2d",
+    "to": "now"
   },
   "timepicker": {
     "refresh_intervals": [
-      "30m"
+      "1m"
     ]
   },
   "timezone": "browser",
   "title": "keywords_dashboard",
   "uid": "bdxhttaoqlw5cd",
-  "version": 2,
+  "version": 1,
   "weekStart": ""
 }

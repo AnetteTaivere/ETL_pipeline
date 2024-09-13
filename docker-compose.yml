@@ -9,8 +9,16 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
       - ./database/create_base.sql:/docker-entrypoint-initdb.d/create_base.sql
+
+  airflow-init:
+    image: apache/airflow:2.7.2-python3.10
+    depends_on:
+      - postgres
+    entrypoint: ["airflow", "db", "migrate"]
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://admin:admin@postgres:5432/keywords
+
 
 
   airflow-webserver:
@@ -21,7 +29,7 @@ services:
     environment:
       AIRFLOW__CORE__EXECUTOR: "LocalExecutor"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://admin:admin@postgres:5432/keywords"
-      AIRFLOW__CORE__FERNET_KEY: "HWdP9bGw2Lc5Is4-bNWUEWwej0IF6_prXdVy55AjA3Y="    
+      AIRFLOW__CORE__FERNET_KEY: "TODO"    
     volumes:
       - ./dags:/opt/airflow/dags
       - ./app:/opt/airflow/app
@@ -33,26 +41,16 @@ services:
   airflow-scheduler:
     image: apache/airflow:2.7.2-python3.10
     environment:
-      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://admin:admin@postgres:5432/keywords
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://admin:admin@postgres:5432/keywords
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: "False"
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "False"
     depends_on:
       - postgres
     volumes:
-      - /home/anette/Downloads/etl_pipeline/dags:/opt/airflow/dags      
       - ./dags:/opt/airflow/dags
       - ./app:/opt/airflow/app
-    command: scheduler
-
-  airflow-init:
-    image: apache/airflow:2.7.2-python3.10
-    depends_on:
-      - postgres
-    entrypoint: ["airflow", "db", "migrate"]
-    environment:
-      AIRFLOW__CORE__SQL_ALCHEMY_DATABASE_URI: postgresql+psycopg2://admin:admin@postgres:5432/keywords
-      
+    command: scheduler      
 
   grafana:
     image: grafana/grafana:latest
@@ -64,11 +62,6 @@ services:
     depends_on:
       - postgres
     volumes:
-      - grafana_data:/var/lib/grafana
       - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
       - ./grafana/datasources:/etc/grafana/provisioning/datasources
       - ./grafana/grafana.ini:/etc/grafana/grafana.ini:ro
-
-volumes:
-  postgres_data:
-  grafana_data:
