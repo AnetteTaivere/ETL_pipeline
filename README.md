@@ -24,7 +24,7 @@ This project is an ETL (Extract, Transform, Load) pipeline that retrieves data f
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/AnetteTaivere/ETL_pipeline.git
    cd etl_pipeline
 
 2. Buid and start Docker containers:
